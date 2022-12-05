@@ -39,7 +39,7 @@ def submission():
 
     # -----------------------------------------------------------
     # specify the model used below
-    model = "linear"
+    model = "rbf"
     print(f"training {model} model...")
     svclassifier = SVC(kernel=f"{model}")
     svclassifier.fit(X_train, y_train.values)
