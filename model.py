@@ -6,6 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
+
 
 sc = StandardScaler()
 
@@ -41,13 +43,16 @@ def submission():
     # specify the model used below
     model = "sigmoid"
     print(f"training {model} model...")
-    svclassifier = SVC(kernel=f"{model}")
+    clf = RandomForestClassifier(n_estimators=100)
+    svclassifier = SVC(C=1000, kernel=f"{model}")
     svclassifier.fit(X_train, y_train.values)
+    clf.fit(X_train, y_train)
     print("trained model.\n")
 
     # -----------------------------------------------------------
     print("making predictions...")
-    y_pred = svclassifier.predict(X_test)
+    y_pred_sigm = svclassifier.predict(X_test)
+    y_pred = clf.predict(X_test)
 
     print("creating submission...")
     create_submission(y_pred, indices)
@@ -66,15 +71,22 @@ def kfold():
     X = X.drop("Index ", axis=1)
     y = training_data["Group (0-Normal Control, 1 Affected)"]
     X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.10, shuffle=True
+        X, y, test_size=0.20, shuffle=True
     )
     X_train = sc.fit_transform(X_train)
     X_val = sc.transform(X_val)
-    svclassifier = SVC(kernel="sigmoid")
+    clf = RandomForestClassifier(n_estimators=100)
+    svclassifier = SVC(C=1000, kernel="sigmoid")
     svclassifier.fit(X_train, y_train)
-    y_pred = svclassifier.predict(X_val)
-    print(confusion_matrix(y_val, y_pred))
+    clf.fit(X_train, y_train)
+    y_pred_sigm = svclassifier.predict(X_val)
+    y_pred = clf.predict(X_val)
+    print("random forest\n----------------------")
+    # print(confusion_matrix(y_val, y_pred))
     print(classification_report(y_val, y_pred))
+    print("sigmoid svm\n----------------------")
+    # print(confusion_matrix(y_val, y_pred_sigm))
+    print(classification_report(y_val, y_pred_sigm))
 
 
 submission()
